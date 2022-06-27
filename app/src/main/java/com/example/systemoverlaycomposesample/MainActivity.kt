@@ -6,9 +6,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,17 +28,18 @@ class MainActivity : ComponentActivity() {
         setContent {
             SystemOverlayComposeSampleTheme {
                 // A surface container using the 'background' color from the theme
-                Column(
+                Row(
                     modifier = Modifier
                         .fillMaxSize()
+                        .padding(16.dp)
                         .background(color = MaterialTheme.colorScheme.background),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.Bottom
                 ) {
                     Button(onClick = ::startOverlay) {
                         Text(text = "Start overlay")
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
                     Button(onClick = ::stopOverlay) {
                         Text(text = "Stop overlay")
                     }

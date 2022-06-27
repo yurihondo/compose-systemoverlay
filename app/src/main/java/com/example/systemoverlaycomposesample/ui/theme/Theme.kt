@@ -55,7 +55,11 @@ fun SystemOverlayComposeSampleTheme(
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
-            (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
+            view.context.let {
+                if (it is Activity) {
+                    it.window.statusBarColor = colorScheme.primary.toArgb()
+                }
+            }
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
         }
     }
