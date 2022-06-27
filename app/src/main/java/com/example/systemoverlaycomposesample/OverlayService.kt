@@ -21,6 +21,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.example.systemoverlaycomposesample.ui.theme.NavGraph
 import com.example.systemoverlaycomposesample.ui.theme.Typography
 
 class OverlayService : LifecycleService(), SavedStateRegistryOwner {
@@ -73,13 +74,7 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner {
         ComposeView(this).apply {
             setViewTreeSavedStateRegistryOwner(this@OverlayService)
             setContent {
-                Text(
-                    text = "Hello, World!",
-                    color = Color.Black,
-                    fontSize = 50.sp,
-                    modifier = Modifier.wrapContentSize(),
-                    style = Typography.headlineLarge
-                )
+                NavGraph()
             }
         }
     }
