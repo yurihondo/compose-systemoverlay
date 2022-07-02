@@ -2,9 +2,11 @@ package com.example.systemoverlaycomposesample.ui.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -28,6 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 enum class Destination(val id: String) {
     HELLO_WORLD("hello_world"),
     VIEW_1("view_1"),
+    LEGACY_VIEW("legacy_view"),
 }
 
 @Composable
@@ -36,6 +39,7 @@ fun NavGraph(
     navController: NavHostController = rememberNavController(),
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
     startDestination: String = "hello_world",
+    onSwitchLegacy: (Destination) -> Unit = {}
 ) {
     val currentNavBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentNavBackStackEntry?.destination?.route ?: startDestination
@@ -59,7 +63,7 @@ fun NavGraph(
                 Text(
                     modifier = Modifier.wrapContentSize(),
                     text = "Hello, World!",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     style = Typography.headlineLarge,
                 )
                 Spacer(modifier = Modifier.height(50.dp))
@@ -83,12 +87,18 @@ fun NavGraph(
                 Text(
                     modifier = Modifier.wrapContentSize(),
                     text = "How's it going?",
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onBackground,
                     style = Typography.headlineLarge,
                 )
                 Spacer(modifier = Modifier.height(50.dp))
-                Button(onClick = { navController.navigate(Destination.HELLO_WORLD.id) }) {
-                    Text(text = "Back")
+                Row {
+                    Button(onClick = { navController.navigate(Destination.HELLO_WORLD.id) }) {
+                        Text(text = "Back")
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(onClick = { onSwitchLegacy(Destination.LEGACY_VIEW) }) {
+                        Text(text = "Go to legacy")
+                    }
                 }
             }
         }

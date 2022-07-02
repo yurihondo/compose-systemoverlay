@@ -3,25 +3,16 @@ package com.example.systemoverlaycomposesample
 import android.content.Context
 import android.content.Intent
 import android.graphics.PixelFormat
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Text
-import androidx.compose.material3.Typography
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import android.widget.Button
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.ViewTreeLifecycleOwner
 import androidx.lifecycle.ViewTreeViewModelStoreOwner
-import androidx.lifecycle.findViewTreeViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.compose.rememberNavController
 import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
@@ -29,19 +20,10 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.example.systemoverlaycomposesample.ui.theme.NavGraph
 import com.example.systemoverlaycomposesample.ui.theme.SystemOverlayComposeSampleTheme
-import com.example.systemoverlaycomposesample.ui.theme.Typography
 
 class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelStoreOwner {
 
-    companion object Action {
-        private val overlayParams = WindowManager.LayoutParams(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT
-        )
-
+    companion object {
         private const val START_OVERLAY = "start_overlay"
         private const val STOP_OVERLAY = "stop_overlay"
 
@@ -58,10 +40,22 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
         }
     }
 
-    private val savedStateRegistryController = SavedStateRegistryController.create(this)
-
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
+
+    private val savedStateRegistryController = SavedStateRegistryController.create(this)
+
+    private val store: ViewModelStore = ViewModelStore()
+
+    private val overlayParams = WindowManager.LayoutParams(
+        WindowManager.LayoutParams.WRAP_CONTENT,
+        WindowManager.LayoutParams.WRAP_CONTENT,
+        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+        WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+        PixelFormat.TRANSLUCENT
+    )
+
+    private var currentView: View? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -78,15 +72,27 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
     }
 
     private val composeView: View by lazy {
-        ComposeView(this).apply {
+        ComposeView(applicationContext).apply {
             setViewTreeSavedStateRegistryOwner(this@OverlayService)
             ViewTreeViewModelStoreOwner.set(this, this@OverlayService)
             setContent {
-                val navController = rememberNavController()
-                navController.setViewModelStore(viewModelStore)
                 SystemOverlayComposeSampleTheme {
-                    NavGraph(navController = navController)
+                    NavGraph(
+                        navController = rememberNavController().apply {
+                            setViewModelStore(viewModelStore)
+                        },
+                        onSwitchLegacy = { changeRootView(legacyView) }
+                    )
                 }
+            }
+        }
+    }
+
+    private val legacyView: View by lazy {
+        val inflater = LayoutInflater.from(applicationContext)
+        inflater.inflate(R.layout.view_legacy, null).apply {
+            findViewById<Button>(R.id.back_to_the_feature_button).setOnClickListener {
+                changeRootView(composeView)
             }
         }
     }
@@ -97,14 +103,19 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
 
     private fun handleStartOverlay() {
         ViewTreeLifecycleOwner.set(composeView, this)
-        windowManager.addView(composeView, overlayParams)
+        changeRootView(composeView)
     }
 
     private fun handleStopOverlay() {
-        windowManager.removeView(composeView)
+        windowManager.removeView(currentView)
     }
 
-    val store: ViewModelStore = ViewModelStore()
+    private fun changeRootView(view: View) {
+        currentView?.run { windowManager.removeView(this) }
+        windowManager.addView(view, overlayParams)
+        currentView = view
+    }
+
     override fun getViewModelStore(): ViewModelStore {
         return store
     }

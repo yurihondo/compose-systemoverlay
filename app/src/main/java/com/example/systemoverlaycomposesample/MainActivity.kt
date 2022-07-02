@@ -31,8 +31,8 @@ class MainActivity : ComponentActivity() {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp)
-                        .background(color = MaterialTheme.colorScheme.background),
+                        .background(color = MaterialTheme.colorScheme.background)
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.Bottom
                 ) {
