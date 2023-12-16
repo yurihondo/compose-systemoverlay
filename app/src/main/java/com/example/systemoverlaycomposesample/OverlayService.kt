@@ -107,11 +107,20 @@ class OverlayService : LifecycleService(), SavedStateRegistryOwner, ViewModelSto
     }
 
     private fun handleStopOverlay() {
-        windowManager.removeView(currentView)
+        currentView?.let { view ->
+            if (view.isAttachedToWindow) {
+                windowManager.removeView(view)
+                currentView = null
+            }
+        }
     }
 
     private fun changeRootView(view: View) {
-        currentView?.run { windowManager.removeView(this) }
+        currentView?.let { currentView ->
+            if (currentView.isAttachedToWindow) {
+                windowManager.removeView(currentView)
+            }
+        }
         windowManager.addView(view, overlayParams)
         currentView = view
     }
