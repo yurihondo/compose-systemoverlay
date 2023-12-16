@@ -1,6 +1,9 @@
 package com.example.systemoverlaycomposesample
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -49,7 +52,14 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startOverlay() {
-        startService(OverlayService.createStartIntent(applicationContext))
+        val overlayPermissionIntent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+            Uri.parse("package:${packageName}"))
+
+        if (!Settings.canDrawOverlays(this)) {
+            startActivity(overlayPermissionIntent)
+        } else {
+            startService(OverlayService.createStartIntent(applicationContext))
+        }
     }
 
     private fun stopOverlay() {
